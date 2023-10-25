@@ -73,18 +73,20 @@ class Trainingdates(commands.Cog):
             message_content = message.content.split("\n")
             line_to_edit_index = 2*emojis.index(payload.emoji.name) + 3
             line_to_edit = message_content[line_to_edit_index].split(")", 1)
-            # update playercount and player list
-            playercount = str(int(line_to_edit[0].strip("(")) + 1)
+            # update player list
             line_to_edit[1] = line_to_edit[1].lstrip("  ")
             player_list = line_to_edit[1].split(", ")
             player_to_add = self.bot.get_user(payload.user_id)
-            player_list.append(player_to_add.display_name)
-            # create new strings
+            if player_to_add.display_name not in player_list:
+                player_list.append(player_to_add.display_name)
             player_list_str = ""
             for player in player_list:
                 player_list_str += player
                 player_list_str += ", "
             player_list_str = player_list_str.strip(", ")
+            # update playercount
+            playercount = str(len(player_list))
+            # create new message content
             message_content[line_to_edit_index] = "(" + playercount + ")  " + str(player_list_str)
             new_msg_content = ""
             for line in message_content:
@@ -118,7 +120,7 @@ class Trainingdates(commands.Cog):
             player_list_str = player_list_str.strip(", ")
             # update playercount
             playercount = str(len(player_list))
-            # create new message
+            # create new message content
             message_content[line_to_edit_index] = "(" + playercount + ")  " + str(player_list_str)
             new_msg_content = ""
             for line in message_content:
