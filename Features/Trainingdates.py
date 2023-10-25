@@ -10,6 +10,10 @@ class Trainingdates(commands.Cog):
         self.bot = bot
 
     @commands.command()
+    async def test(self, ctx):
+        await ctx.send("läuft")
+
+    @commands.command()
     async def neueWoche(self, ctx, monday):
         # get monday date
         monday = monday.split(".")
