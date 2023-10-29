@@ -48,7 +48,10 @@ class Trainingdates(commands.Cog):
         for timeslot in dates_weekend:
             message_weekend += timeslot
             message_weekend += "(0)\n"
+        # get role for ping
+        role_to_ping = ctx.guild.get_role(1114657726048522441)
         # send messages and add reactions
+        await ctx.send(role_to_ping.mention)
         await ctx.send(message_week)
         msg_id = ctx.channel.last_message_id
         msg = ctx.channel.get_partial_message(msg_id)
