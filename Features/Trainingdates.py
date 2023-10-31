@@ -28,15 +28,15 @@ class Trainingdates(commands.Cog):
              "sat": (mon + 5*forward).strftime("**%a (%d. %B)**"),
              "sun": (mon + 6*forward).strftime("**%a (%d. %B)**")}
         # create message headers
-        header_week = ":bar_chart:  **TRAINING DATES (8PM)**\n" + w["mon"] + " **-** " + w["fri"] + "\n"
-        header_weekend = ":bar_chart:  **TRAINING DATES**\n" + w["sat"] + " **-** " + w["sun"] + "\n"
+        header_week = ":bar_chart:  **TRAINING DATES (8PM CET)**\n" + w["mon"] + " **-** " + w["fri"] + "\n"
+        header_weekend = ":bar_chart:  **TRAINING DATES (CET)**\n" + w["sat"] + " **-** " + w["sun"] + "\n"
         # create timeslots
         dates_week = [emojis[0] + w["mon"] + "\n",
                       emojis[1] + w["tue"] + "\n",
                       emojis[2] + w["wed"] + "\n",
                       emojis[3] + w["thu"] + "\n",
                       emojis[4] + w["fri"] + "\n"]
-        dates_weekend = [emojis[0] + w["sat"] + " **3PM**\n", emojis[1] + w["sat"] + " **8PM**\n",
+        dates_weekend = [emojis[0] + w["sat"] + " **3PM **\n", emojis[1] + w["sat"] + " **8PM**\n",
                          emojis[2] + w["sun"] + " **3PM**\n", emojis[3] + w["sun"] + " **8PM**\n"]
         # create message for week
         message_week = header_week
