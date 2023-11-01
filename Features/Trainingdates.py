@@ -5,6 +5,36 @@ import datetime
 emojis = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣"]
 
 
+async def update_participants(message, bot):
+    # check old message content
+    msg_content = message.content.split("\n")
+    msg_reactions = message.reactions
+    for reaction in msg_reactions:
+        # create playerlist
+        player_list = []
+        users = [user async for user in reaction.users()]
+        users.remove(bot)
+        for user in users:
+            player_list.append(user.display_name)
+        # make string from playerlist
+        player_list_str = ""
+        for player in player_list:
+            player_list_str += player
+            player_list_str += ", "
+        player_list_str = player_list_str.strip(", ")
+        # calc playercount
+        playercount = str(len(player_list))
+        # update line in content
+        line_to_edit_index = 2 * emojis.index(reaction.emoji) + 3
+        msg_content[line_to_edit_index] = "(" + playercount + ")  " + str(player_list_str)
+    # create new message
+    new_msg_content = ""
+    for line in msg_content:
+        new_msg_content += line + "\n"
+    # send message
+    await message.edit(content=new_msg_content)
+
+
 class Trainingdates(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -51,7 +81,6 @@ class Trainingdates(commands.Cog):
         # get role for ping
         role_to_ping = ctx.guild.get_role(1114657726048522441)
         # send messages and add reactions
-        await ctx.send(role_to_ping.mention)
         await ctx.send(message_week)
         msg_id = ctx.channel.last_message_id
         msg = ctx.channel.get_partial_message(msg_id)
@@ -62,6 +91,7 @@ class Trainingdates(commands.Cog):
         msg = ctx.channel.get_partial_message(msg_id)
         for i in range(len(dates_weekend)):
             await msg.add_reaction(emojis[i])
+        await ctx.send(role_to_ping.mention)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -72,30 +102,7 @@ class Trainingdates(commands.Cog):
         channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
         if message.author.id == self.bot.user.id:
-            # check old message content
-            message_content = message.content.split("\n")
-            line_to_edit_index = 2*emojis.index(payload.emoji.name) + 3
-            line_to_edit = message_content[line_to_edit_index].split(")", 1)
-            # update player list
-            line_to_edit[1] = line_to_edit[1].lstrip("  ")
-            player_list = line_to_edit[1].split(", ")
-            player_to_add = self.bot.get_user(payload.user_id)
-            if player_to_add.display_name not in player_list:
-                player_list.append(player_to_add.display_name)
-            player_list_str = ""
-            for player in player_list:
-                player_list_str += player
-                player_list_str += ", "
-            player_list_str = player_list_str.strip(", ")
-            # update playercount
-            playercount = str(len(player_list))
-            # create new message content
-            message_content[line_to_edit_index] = "(" + playercount + ")  " + str(player_list_str)
-            new_msg_content = ""
-            for line in message_content:
-                new_msg_content += line + "\n"
-            # send message
-            await message.edit(content=new_msg_content)
+            await update_participants(message, self.bot.user)
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
@@ -106,30 +113,7 @@ class Trainingdates(commands.Cog):
         channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
         if message.author.id == self.bot.user.id:
-            # check old message content
-            message_content = message.content.split("\n")
-            line_to_edit_index = 2 * emojis.index(payload.emoji.name) + 3
-            line_to_edit = message_content[line_to_edit_index].split(")", 1)
-            # update player list
-            line_to_edit[1] = line_to_edit[1].strip("  ")
-            player_list = line_to_edit[1].split(", ")
-            player_to_remove = self.bot.get_user(payload.user_id)
-            if player_to_remove.display_name in player_list:
-                player_list.remove(player_to_remove.display_name)
-            player_list_str = ""
-            for player in player_list:
-                player_list_str += player
-                player_list_str += ", "
-            player_list_str = player_list_str.strip(", ")
-            # update playercount
-            playercount = str(len(player_list))
-            # create new message content
-            message_content[line_to_edit_index] = "(" + playercount + ")  " + str(player_list_str)
-            new_msg_content = ""
-            for line in message_content:
-                new_msg_content += line + "\n"
-            # send message
-            await message.edit(content=new_msg_content)
+            await update_participants(message, self.bot.user)
 
 
 async def setup(bot):
