@@ -9,24 +9,42 @@ async def update_participants(message, bot):
     # check old message content
     msg_content = message.content.split("\n")
     msg_reactions = message.reactions
+    # collect roles and roster ids
+    surv_role = message.guild.get_role(1114665314362331156)
+    killer_role = message.guild.get_role(1114665372919005265)
+    surv_roster_ids = []
+    for surv in surv_role.members:
+        surv_roster_ids.append(surv.id)
     for reaction in msg_reactions:
-        # create playerlist
-        player_list = []
+        # create playerlists
+        surv_list = []
+        killer_list = []
         users = [user async for user in reaction.users()]
         users.remove(bot)
         for user in users:
-            player_list.append(user.display_name)
-        # make string from playerlist
-        player_list_str = ""
-        for player in player_list:
-            player_list_str += player
-            player_list_str += ", "
-        player_list_str = player_list_str.strip(", ")
+            if user.id in surv_roster_ids:
+                surv_list.append(user.display_name)
+            else:
+                killer_list.append(user.display_name)
+        # make strings from lists
+        surv_list_str = ""
+        for surv in surv_list:
+            surv_list_str += surv
+            surv_list_str += ", "
+        surv_list_str = " " + surv_list_str.strip(", ")
+        killer_list_str = ""
+        for killer in killer_list:
+            killer_list_str += killer
+            killer_list_str += ", "
+        killer_list_str = " " + killer_list_str.strip(", ")
         # calc playercount
-        playercount = str(len(player_list))
-        # update line in content
-        line_to_edit_index = 2 * emojis.index(reaction.emoji) + 3
-        msg_content[line_to_edit_index] = "(" + playercount + ")  " + str(player_list_str)
+        surv_count = str(len(surv_list))
+        killer_count = str(len(killer_list))
+        # update lines in content
+        surv_line_index = 3 * emojis.index(reaction.emoji) + 3
+        killer_line_index = 3 * emojis.index(reaction.emoji) + 4
+        msg_content[surv_line_index] = "(" + surv_count + ") " + surv_role.mention + surv_list_str
+        msg_content[killer_line_index] = "(" + killer_count + ") " + killer_role.mention + killer_list_str
     # create new message
     new_msg_content = ""
     for line in msg_content:
@@ -68,18 +86,21 @@ class Trainingdates(commands.Cog):
                       emojis[4] + w["fri"] + "\n"]
         dates_weekend = [emojis[0] + w["sat"] + " **3PM **\n", emojis[1] + w["sat"] + " **8PM**\n",
                          emojis[2] + w["sun"] + " **3PM**\n", emojis[3] + w["sun"] + " **8PM**\n"]
+        # get roles to ping
+        surv_role = ctx.guild.get_role(1114665314362331156)
+        killer_role = ctx.guild.get_role(1114665372919005265)
         # create message for week
         message_week = header_week
         for timeslot in dates_week:
             message_week += timeslot
-            message_week += "(0)\n"
+            message_week += "(0) " + surv_role.mention + "\n"
+            message_week += "(0) " + killer_role.mention + "\n"
         # create message for weekend
         message_weekend = header_weekend
         for timeslot in dates_weekend:
             message_weekend += timeslot
-            message_weekend += "(0)\n"
-        # get role for ping
-        role_to_ping = ctx.guild.get_role(1114657726048522441)
+            message_weekend += "(0) " + surv_role.mention + "\n"
+            message_weekend += "(0) " + killer_role.mention + "\n"
         # send messages and add reactions
         await ctx.send(message_week)
         msg_id = ctx.channel.last_message_id
@@ -91,7 +112,6 @@ class Trainingdates(commands.Cog):
         msg = ctx.channel.get_partial_message(msg_id)
         for i in range(len(dates_weekend)):
             await msg.add_reaction(emojis[i])
-        await ctx.send(role_to_ping.mention)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
